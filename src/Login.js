@@ -1,5 +1,6 @@
 import axios from 'axios';
 import React, { useState } from 'react'
+import { useHistory } from 'react-router-dom';
 import './Login.css';
 import env from "./settings";
 
@@ -7,13 +8,14 @@ import env from "./settings";
 function Login() {
     const [username, setusername] = useState("");
     const [password, setpassword] = useState("");
-
+    let history = useHistory()
     let handleSubmit = async (e) => {
         e.preventDefault()
         try {
             let logindata = await axios.post(`${env.api}/login`, { username, password })
             console.log(logindata)
-            alert(logindata.data.message)
+            window.localStorage.setItem("app_token",logindata.data.token)
+            history.push("/todo")
         } catch (error) {
             console.log(error)
         }

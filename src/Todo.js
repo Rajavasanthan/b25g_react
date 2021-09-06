@@ -1,17 +1,24 @@
 import React from 'react'
 import axios from "axios";
 import { useEffect, useState } from 'react';
+import env from './settings';
+import { useHistory } from 'react-router-dom';
 
 function Todo() {
     const [toDoList, setToDo] = useState([]);
-  const [task, setTask] = useState("")
+  const [task, setTask] = useState("");
+  let history = useHistory()
   useEffect(async () => {
     fetchTaskList()
   }, [])
 
   let fetchTaskList = async () => {
     try {
-      let toDoListData = await axios.get("https://b25gnode.herokuapp.com/list-all-todo");
+      let toDoListData = await axios.get(`${env.api}/list-all-todo`,{
+        headers : {
+          "Authorization" : window.localStorage.getItem("app_token")
+        }
+      });
       setToDo([...toDoListData.data])
     } catch (error) {
       console.log(error)
@@ -20,7 +27,11 @@ function Todo() {
 
   let handleCreateTask = async () => {
     try {
-      let postData = await axios.post("https://b25gnode.herokuapp.com/create-task", { message: task })
+      let postData = await axios.post(`${env.api}/create-task`, { message: task },{
+        headers : {
+          "Authorization" : window.localStorage.getItem("app_token")
+        }
+      })
       fetchTaskList()
       setTask("")
     } catch (error) {
@@ -30,7 +41,11 @@ function Todo() {
 
   let handleCHange = async (e, id) => {
     try {
-      let updateData = await axios.put(`https://b25gnode.herokuapp.com/update-task/${id}`, { status: e.target.checked });
+      let updateData = await axios.put(`${env.api}/update-task/${id}`, { status: e.target.checked },{
+        headers : {
+          "Authorization" : window.localStorage.getItem("app_token")
+        }
+      });
       fetchTaskList()
     } catch (error) {
       alert(error)
@@ -39,7 +54,11 @@ function Todo() {
 
   let handleDelete = async (id) => {
     try {
-      await axios.delete(`https://b25gnode.herokuapp.com/delete-task/${id}`);
+      await axios.delete(`${env.api}/delete-task/${id}`,{
+        headers : {
+          "Authorization" : window.localStorage.getItem("app_token")
+        }
+      });
       fetchTaskList()
     } catch (error) {
       alert(error)
@@ -47,8 +66,13 @@ function Todo() {
   }
     return (
         <div className="container">
+          <button className="btn btn-primary" onClick={() => {
+          window.localStorage.removeItem("app_token");
+          history.push("/login")
+        }}>Logout</button>
       <div className="row">
         <h2>To Do</h2>
+        
         <div className="col-lg-12">
           <div class="input-group mb-3">
             <input type="text" class="form-control" value={task} onChange={e => setTask(e.target.value)} placeholder="Task..." aria-label="Recipient's username" aria-describedby="button-addon2" />
